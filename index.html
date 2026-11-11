@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualif'Flotte Pro 2026 — Simulateur d'Externalisation LLD & Mobilité B2B</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #060a12;
+            color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #1e293b;
+            border-radius: 9999px;
+            border: 1px solid #334155;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -8px;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.65);
+            border: 2px solid #ffffff;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #34d399;
+        }
+        /* Mobile Simulator Frame Mode (when testing student phone view on PC) */
+        .mobile-preview-frame {
+            max-width: 440px !important;
+            margin: 1.5rem auto !important;
+            border: 10px solid #1e293b !important;
+            border-radius: 2.75rem !important;
+            box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.9) !important;
+            overflow: hidden;
+            background-color: #090e1a;
+        }
+        /* Print Styles for White-Label Client PDF */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #app-wrapper {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .card-surface {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                box-shadow: none !important;
+                break-inside: avoid;
+            }
+            .text-white, .text-slate-100, .text-slate-200, .text-slate-300 {
+                color: #0f172a !important;
+            }
+            .text-slate-400 {
+                color: #475569 !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- STICKY TOP GLOBAL HEADER -->
+    <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Brand Identity -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-emerald-900/40 border border-emerald-400/40">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 17a2 2 0 100-4 2 2 0 000 4zm8 0a2 2 0 100-4 2 2 0 000 4zM5 15H3v-4l2-5h11l4 5v4h-2m-2 0H9" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="text-base sm:text-lg font-black tracking-tight text-white uppercase">
+                            Qualif'Flotte <span class="text-emerald-400">Pro 2026</span>
+                        </h1>
+                        <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wider">
+                            Simulateur d'Externalisation LLD & Mobilité B2B
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium">
+                        Protection du BFR (Zéro Apport) • Fiscalité VUL N1 & VP Électrique • Prescription Arval / LeasePlan / CGI Finance
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Controls: View Switcher & Mode Switcher -->
+            <div class="no-print flex flex-wrap items-center gap-2">
+                <!-- Toggle PC Grand Écran vs Aperçu Smartphone Élève -->
+                <button id="btn-view-mode" type="button" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer">
+                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span id="view-mode-label">Vue : PC Grand Écran</span>
+                </button>
+
+                <!-- Toggle Mode École (Pitch Élève) vs Mode Client Pro (Marque Blanche) -->
+                <button id="btn-whitelabel" type="button" class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 transition cursor-pointer">
+                    <span id="wl-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span id="wl-text">Mode : École (Pitch Élève)</span>
+                </button>
+
+                <!-- Print / Export PDF -->
+                <button id="btn-print-top" type="button" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition shadow-lg shadow-emerald-950/50 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    <span class="hidden sm:inline">Rapport PDF</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 1. BANDEAU SCÉNARIOS RAPIDES (4 BOUTONS PRÉ-CONFIGURÉS) -->
+        <div class="bg-slate-950/90 border-t border-slate-800/80">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <span>⚡ Scénarios Rapides de Terrain :</span>
+                </span>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full lg:w-auto flex-1 lg:max-w-4xl">
+                    <button type="button" data-preset="artisan" class="preset-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-emerald-500 text-left transition cursor-pointer">
+                        <div class="text-xs font-extrabold text-white truncate">🚐 Utilitaire Artisan</div>
+                        <div class="text-[10px] text-emerald-300 font-semibold">VUL N1 • 28 000 € HT</div>
+                    </button>
+                    <button type="button" data-preset="citadine" class="preset-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer">
+                        <div class="text-xs font-extrabold text-sky-300 truncate">🚗 Citadine Commerciale</div>
+                        <div class="text-[10px] text-slate-400 font-semibold">VP Électrique • 19 500 €</div>
+                    </button>
+                    <button type="button" data-preset="suv" class="preset-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer">
+                        <div class="text-xs font-extrabold text-indigo-300 truncate">⚡ SUV Dirigeant</div>
+                        <div class="text-[10px] text-slate-400 font-semibold">VP Élec Éco-scoré • 42 000 €</div>
+                    </button>
+                    <button type="button" data-preset="flotte" class="preset-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer">
+                        <div class="text-xs font-extrabold text-amber-300 truncate">🏢 Flotte TPE 3 Utilitaires</div>
+                        <div class="text-[10px] text-slate-400 font-semibold">3 VUL N1 • 84 000 € HT</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE CONTAINER (PC 12-COL DASHBOARD BY DEFAULT OR MOBILE PREVIEW FRAME) -->
+    <div id="app-wrapper" class="max-w-7xl mx-auto px-4 sm:px-6 py-6 transition-all duration-300">
+
+        <!-- TOP KPI EXECUTIVE DASHBOARD BAR -->
+        <section class="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <!-- KPI 1: Loyer Mensuel Fixe -->
+            <div class="card-surface bg-slate-900/95 border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Loyer Mensuel Fixe Estimé</span>
+                    <span id="kpi-badge-cat" class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">VUL N1</span>
+                </div>
+                <div class="mt-2 flex items-baseline gap-1.5">
+                    <span id="kpi-loyer-flotte" class="text-2xl sm:text-3xl font-black text-white">418 €</span>
+                    <span class="text-xs text-slate-400 font-semibold">/ mois HT</span>
+                </div>
+                <p id="kpi-loyer-unitaire" class="text-xs text-emerald-400 font-semibold mt-1">
+                    418 € / véh. • Services & consommables inclus
+                </p>
+            </div>
+
+            <!-- KPI 2: Cash Préservé Immédiatement (BFR intact) -->
+            <div class="card-surface bg-slate-900/95 border border-emerald-500/40 rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-300">Cash Préservé (BFR Intact)</span>
+                    <span class="text-xs">🛡️</span>
+                </div>
+                <div class="mt-2 flex items-baseline gap-1.5">
+                    <span id="kpi-cash-saved" class="text-2xl sm:text-3xl font-black text-emerald-400">+8 960 €</span>
+                </div>
+                <p id="kpi-cash-detail" class="text-xs text-slate-400 mt-1">
+                    Apport évité (5 600 €) + Remise centrale (-3 360 €)
+                </p>
+            </div>
+
+            <!-- KPI 3: Gain Mensuel vs Acquisition Crédit -->
+            <div class="card-surface bg-slate-900/95 border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Économie de Flux Mensuel</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Compte 6135</span>
+                </div>
+                <div class="mt-2 flex items-baseline gap-1.5">
+                    <span id="kpi-monthly-gain" class="text-2xl sm:text-3xl font-black text-indigo-400">+212 €</span>
+                    <span class="text-xs text-slate-400 font-semibold">/ mois</span>
+                </div>
+                <p id="kpi-contract-gain" class="text-xs text-slate-400 mt-1">
+                    Soit +10 176 € préservés sur 48 mois
+                </p>
+            </div>
+
+            <!-- KPI 4: Rémunération Partenaire / Apporteur CGI Finance (3%) ou Statut Fiscal -->
+            <div class="card-surface bg-slate-900/95 border border-amber-500/30 rounded-2xl p-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <span id="kpi-4-title" class="text-[11px] font-bold uppercase tracking-wider text-amber-300">Rémunération Apporteur (3%)</span>
+                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">CGI / Loueur</span>
+                </div>
+                <div class="mt-2 flex items-baseline gap-1.5">
+                    <span id="kpi-partner-comm" class="text-2xl sm:text-3xl font-black text-amber-400">840 €</span>
+                    <span id="kpi-partner-unit" class="text-xs text-slate-400 font-semibold">HT (3% valeur)</span>
+                </div>
+                <p id="kpi-4-sub" class="text-xs text-slate-400 mt-1">
+                    Commission partenaire sur 28 000 € HT
+                </p>
+            </div>
+        </section>
+
+        <!-- MAIN 12-COLUMN GRID (LEFT: 5 COLS CONFIGURATOR | RIGHT: 7 COLS ANALYSIS, FISCALITY, PITCH & CRM) -->
+        <div id="main-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- ================================================================= -->
+            <!-- LEFT COLUMN (5 COLS ON PC): CONFIGURATEUR DE FLOTTE & FINANCEMENT -->
+            <!-- ================================================================= -->
+            <div id="col-config" class="lg:col-span-5 space-y-5">
+
+                <div class="card-surface bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-5">
+                    
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">Paramétrage Sur-Mesure</span>
+                            <h2 class="text-sm sm:text-base font-black text-white uppercase">
+                                Configurateur Flotte & Financement
+                            </h2>
+                        </div>
+                        <span class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-bold">Normes 2026</span>
+                    </div>
+
+                    <!-- A. CHOIX DU PROFIL DE VÉHICULE (VUL N1 vs VP ÉLECTRIQUE ÉCO-SCORÉ) -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-extrabold uppercase tracking-wider text-indigo-300 block">
+                            1. Profil Fiscal & Réglementaire du Véhicule (2026)
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <!-- Option VUL N1 -->
+                            <button type="button" id="btn-cat-vul" class="p-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-left transition cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-black text-white">🚐 VUL (Catégorie N1)</span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-black">100% TVA</span>
+                                </div>
+                                <p class="text-[11px] text-slate-300 mt-1 leading-snug">
+                                    0 plafond d'amortissement • TVA 100% récupérable • Bouclier décote & ZFE.
+                                </p>
+                            </button>
+
+                            <!-- Option VP 100% Électrique Éco-scoré -->
+                            <button type="button" id="btn-cat-vp" class="p-3 rounded-xl border border-slate-700 bg-slate-800/60 text-left transition cursor-pointer">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-black text-slate-200">⚡ VP Électrique Éco-scoré</span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-300 font-bold">Plafond 30k€</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mt-1 leading-snug">
+                                    Amortissement 30 000 € TTC • 0 Malus / 0 TVE • Abattement 70% AEN.
+                                </p>
+                            </button>
+                        </div>
+
+                        <!-- Dynamic Fiscal Rule Alert Box -->
+                        <div id="fiscal-rule-alert" class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/40 text-xs text-indigo-200">
+                            <strong class="text-indigo-300 uppercase block mb-0.5">✓ Règle Fiscale Active : Véhicule Utilitaire Léger (VUL - Cat. N1)</strong>
+                            <span id="fiscal-rule-desc">Absence totale de plafonnement d'amortissement, déductibilité de 100 % de la TVA (loyers, entretien, énergie) et protection contre la dépréciation d'actifs et restrictions ZFE.</span>
+                        </div>
+                    </div>
+
+                    <!-- B. CALIBRAGE DE LA FLOTTE (NOMBRE, PRIX, DURÉE, KM) -->
+                    <div class="space-y-4 pt-2 border-t border-slate-800">
+                        <!-- Nombre de véhicules (1 à 10) -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-xs">
+                                <label for="slider-qty" class="text-slate-300 font-semibold">Nombre de véhicules (1 à 10)</label>
+                                <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-black text-sm">
+                                    <span id="lbl-qty">1</span> véhicule(s)
+                                </span>
+                            </div>
+                            <input id="slider-qty" type="range" min="1" max="10" step="1" value="1">
+                        </div>
+
+                        <!-- Prix unitaire catalogue (€) -->
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-xs">
+                                <label for="slider-price" class="text-slate-300 font-semibold">Prix unitaire catalogue (€)</label>
+                                <div class="flex items-center gap-1.5">
+                                    <input id="num-price" type="number" min="12000" max="100000" step="500" value="28000" class="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-right text-xs font-extrabold text-white focus:border-emerald-500 focus:outline-none">
+                                    <span class="text-xs font-bold text-slate-400">€</span>
+                                </div>
+                            </div>
+                            <input id="slider-price" type="range" min="15000" max="80000" step="500" value="28000">
+                        </div>
+
+                        <!-- Durée du contrat (24, 36, 48, 60 mois) & Kilométrage annuel (15k à 60k) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-300 font-semibold block mb-1.5">Durée du contrat (mois)</label>
+                                <div class="grid grid-cols-4 gap-1.5">
+                                    <button type="button" data-dur="24" class="dur-btn py-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 cursor-pointer">24m</button>
+                                    <button type="button" data-dur="36" class="dur-btn py-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 cursor-pointer">36m</button>
+                                    <button type="button" data-dur="48" class="dur-btn py-2 rounded-lg text-xs font-extrabold border-2 border-emerald-500 bg-emerald-500/20 text-white cursor-pointer">48m</button>
+                                    <button type="button" data-dur="60" class="dur-btn py-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 cursor-pointer">60m</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="slider-km" class="text-xs text-slate-300 font-semibold flex justify-between mb-1.5">
+                                    <span>Kilométrage/an :</span>
+                                    <strong class="text-emerald-400"><span id="lbl-km">25 000</span> km</strong>
+                                </label>
+                                <input id="slider-km" type="range" min="15000" max="60000" step="5000" value="25000" class="mt-2">
+                                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                                    <span>15 000 km</span>
+                                    <span>35 000 km</span>
+                                    <span>60 000 km</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- C. LEVIER TRÉSORERIE (APPORT INITIAL & BOUTON CHOC ZÉRO APPORT) -->
+                    <div class="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 space-y-2.5">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <span class="text-xs font-black text-white uppercase tracking-wide flex items-center gap-1.5">
+                                    🛡️ Levier Trésorerie & Protection BFR
+                                </span>
+                                <p class="text-[11px] text-emerald-200 mt-0.5">
+                                    Pas d'obligation de 1er loyer majoré en LLD = <strong>Trésorerie (BFR) 100% préservée</strong>
+                                </p>
+                            </div>
+                            <button type="button" id="btn-zero-apport" class="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-md transition cursor-pointer">
+                                Forcer Zéro Apport (0 €)
+                            </button>
+                        </div>
+
+                        <div class="pt-2 border-t border-emerald-500/20">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300">Curseur d'apport initial / 1er loyer majoré :</span>
+                                <span class="font-black text-emerald-300"><span id="lbl-apport-pct">0</span> % (<span id="lbl-apport-euro">0 €</span>)</span>
+                            </div>
+                            <input id="slider-apport" type="range" min="0" max="25" step="5" value="0">
+                        </div>
+                    </div>
+
+                    <!-- D. REMISE NÉGOCIÉE CENTRALE LOUEUR (0% à 18%, défaut 12%) -->
+                    <div class="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <label for="slider-discount" class="text-slate-200 font-bold">
+                                Remise négociée centrale Loueur (Arval / LeasePlan / CGI)
+                            </label>
+                            <span class="text-xs font-black text-amber-400">
+                                -<span id="lbl-discount">12</span> % (<span id="lbl-discount-euro">-3 360 €</span>)
+                            </span>
+                        </div>
+                        <input id="slider-discount" type="range" min="0" max="18" step="1" value="12">
+                        <p class="text-[11px] text-slate-400">
+                            Accès aux remises centrales nationales négociées par Arval / LeasePlan sur le prix catalogue.
+                        </p>
+                    </div>
+
+                    <!-- E. CASES À COCHER : SERVICES & CONSOMMABLES INCLUS DANS LE LOYER FIXE -->
+                    <div class="space-y-2.5 pt-2 border-t border-slate-800">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-amber-300">
+                                Services & Consommables Inclus (Loyer Fixe)
+                            </span>
+                            <span class="text-[10px] text-slate-400">Cochez pour chiffrer</span>
+                        </div>
+
+                        <div class="space-y-2 text-xs">
+                            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                                <div class="flex items-center gap-2.5 pr-2">
+                                    <input type="checkbox" id="chk-maint" checked class="w-4 h-4 accent-emerald-500 rounded">
+                                    <div>
+                                        <span class="font-bold text-white block">Maintenance, révisions & contrôles techniques réglementaires</span>
+                                        <span class="text-[11px] text-slate-400">Entretien complet préconisé par le constructeur et la législation</span>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-extrabold text-emerald-400 whitespace-nowrap">+35 €/m/véh</span>
+                            </label>
+
+                            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-amber-500/40 hover:border-amber-500/60 cursor-pointer">
+                                <div class="flex items-center gap-2.5 pr-2">
+                                    <input type="checkbox" id="chk-conso" checked class="w-4 h-4 accent-emerald-500 rounded">
+                                    <div>
+                                        <span class="font-bold text-amber-300 block">Pack Consommables 100% inclus (Argument Terrain)</span>
+                                        <span class="text-[11px] text-slate-300">Balais d'essuie-glace, ampoules, batteries, antigel, lubrifiants</span>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-extrabold text-amber-300 whitespace-nowrap">+18 €/m/véh</span>
+                            </label>
+
+                            <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                                <div class="flex items-center gap-2.5 pr-2">
+                                    <input type="checkbox" id="chk-pneus" checked class="w-4 h-4 accent-emerald-500 rounded">
+                                    <div>
+                                        <span class="font-bold text-white block">Pneumatiques & Assistance 24/7 avec véhicule relais</span>
+                                        <span class="text-[11px] text-slate-400">Continuité d'activité garantie en cas de panne ou sinistre</span>
+                                    </div>
+                                </div>
+                                <span class="text-xs font-extrabold text-emerald-400 whitespace-nowrap">+28 €/m/véh</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- RIGHT COLUMN (7 COLS ON PC): CHOC VISUEL, FISCALITÉ, PITCH & CRM  -->
+            <!-- ================================================================= -->
+            <div id="col-results" class="lg:col-span-7 space-y-6">
+
+                <!-- BLOC A : LE "CHOC VISUEL" (COMPARATIF ACQUISITION CLASSIQUE VS SOLUTION LLD) -->
+                <div class="card-surface bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                Bloc A • Arbitrage Financier Dirigeant
+                            </span>
+                            <h2 class="text-sm sm:text-base font-black text-white uppercase mt-1">
+                                Le Choc Visuel : Acquisition / Crédit Classique vs Solution LLD Externalisée
+                            </h2>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[11px] text-slate-400 block">Valeur Catalogue Flotte</span>
+                            <span id="comp-catalog-total" class="text-sm font-black text-white">28 000 € HT (1 véh.)</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Colonne Rouge/Orange : Acquisition / Crédit Classique -->
+                        <div class="rounded-2xl bg-gradient-to-b from-rose-950/30 to-amber-950/20 border border-rose-500/40 p-4 flex flex-col justify-between space-y-4">
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                        ⚠️ Acquisition / Crédit Classique
+                                    </span>
+                                    <span class="text-[11px] font-bold text-amber-400">Propriété = Risque</span>
+                                </div>
+
+                                <div class="p-3 rounded-xl bg-slate-950/85 border border-rose-500/30">
+                                    <span class="text-[11px] text-slate-400 block">Charge mensuelle subie (Crédit 5,9% + Entretien isolé)</span>
+                                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                                        <span id="shock-classic-monthly" class="text-2xl font-black text-rose-400">630 €</span>
+                                        <span class="text-xs text-slate-400">/ mois HT</span>
+                                    </div>
+                                </div>
+
+                                <ul class="space-y-2 text-xs text-slate-300">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-rose-400 font-black">✕</span>
+                                        <span><strong>Capital immobilisé (Apport 20% + Frais) :</strong> <strong id="shock-classic-apport" class="text-amber-300">5 600 €</strong> prélevés sur la trésorerie active (erreur d'adossement).</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-rose-400 font-black">✕</span>
+                                        <span><strong>Endettement bancaire alourdi :</strong> Inscription à l'actif et passif (Compte 164), consomme vos lignes de crédit pro.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-rose-400 font-black">✕</span>
+                                        <span><strong>Risque financier de revente & décote :</strong> Dépréciation argus et obsolescence ZFE 100 % à la charge de l'artisan.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-rose-400 font-black">✕</span>
+                                        <span><strong>Coûts d'entretien imprévisibles :</strong> Factures d'atelier non mutualisées, immobilisation sans véhicule relais.</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="pt-3 border-t border-rose-500/20 flex items-center justify-between text-xs">
+                                <span class="text-slate-400">Ponction immédiate BFR :</span>
+                                <span id="shock-classic-drain" class="font-black text-rose-400">-5 600 € de cash</span>
+                            </div>
+                        </div>
+
+                        <!-- Colonne Émeraude : Solution LLD (Arval / LeasePlan) ou LOA Pro (CGI Finance) -->
+                        <div class="rounded-2xl bg-gradient-to-b from-emerald-950/35 to-teal-950/25 border-2 border-emerald-500 p-4 flex flex-col justify-between space-y-4 shadow-lg shadow-emerald-950/40">
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold uppercase px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950">
+                                        ✅ Solution LLD / LOA Pro Externalisée
+                                    </span>
+                                    <span class="text-[11px] font-bold text-emerald-300">Arval • LeasePlan • CGI</span>
+                                </div>
+
+                                <div class="p-3 rounded-xl bg-slate-950/90 border border-emerald-500/40">
+                                    <span class="text-[11px] text-slate-300 block">Loyer mensuel fixe tout compris (Compte 6135)</span>
+                                    <div class="flex items-baseline gap-1.5 mt-0.5">
+                                        <span id="shock-lld-monthly" class="text-2xl font-black text-emerald-400">418 €</span>
+                                        <span class="text-xs text-slate-300">/ mois HT</span>
+                                        <span id="shock-lld-unit-tag" class="text-[11px] text-emerald-300 ml-auto font-bold">(418 € / véh.)</span>
+                                    </div>
+                                </div>
+
+                                <ul class="space-y-2 text-xs text-slate-200">
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-400 font-black">✓</span>
+                                        <span><strong><span id="shock-lld-apport" class="text-emerald-300">0 €</span> de capital immobilisé :</strong> BFR 100 % intact pour financer vos stocks, chantiers et délais clients.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-400 font-black">✓</span>
+                                        <span><strong>Économie immédiate via remise centrale :</strong> <strong id="shock-lld-discount" class="text-amber-300">-3 360 € HT</strong> négociés (Prix net financé : <span id="shock-lld-net">24 640 €</span>).</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-400 font-black">✓</span>
+                                        <span><strong>Loyer mensuel fixe tout compris :</strong> Budgétisation aisée incluant maintenance, pneus et consommables.</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="text-emerald-400 font-black">✓</span>
+                                        <span><strong>Zéro risque de revente & Interlocuteur unique :</strong> Restitution simple au loueur (ou option d'achat CGI Finance).</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="pt-3 border-t border-emerald-500/30 flex items-center justify-between text-xs">
+                                <span class="text-emerald-200 font-semibold">Cash immédiat préservé :</span>
+                                <span id="shock-lld-saved" class="font-black text-emerald-400 text-sm">+8 960 € de trésorerie</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indicateur Financier & Rémunération Apporteur CGI Finance (3%) -->
+                    <div id="partner-comm-banner" class="p-3.5 rounded-xl bg-slate-950 border border-amber-500/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="px-2 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-black">INDICATEUR COURTIER / ÉCOLE</span>
+                            <span class="text-slate-300">
+                                Convention Partenaire <strong>CGI Finance / Loueurs</strong> : Rémunération très attractive à <strong>3 % de la valeur catalogue</strong>.
+                            </span>
+                        </div>
+                        <div class="font-black text-amber-400 text-sm">
+                            Commission : <span id="banner-comm-val">840 € HT</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOC B : NOUVELLE SECTION "ACTUALITÉS MACRO & OPTIMISATION FISCALE 2026" -->
+                <div class="card-surface bg-gradient-to-br from-indigo-950/60 via-slate-900 to-slate-900 border border-indigo-500/40 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-500/30 pb-3">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/40">
+                                Bloc B • Veille Stratégique & Réglementaire (Novembre 2026)
+                            </span>
+                            <h2 class="text-sm sm:text-base font-black text-white uppercase mt-1">
+                                Actualités Macro & Optimisation Fiscale 2026
+                            </h2>
+                        </div>
+                        <span id="fiscal-active-pill" class="text-xs font-extrabold px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            Mode actif : VUL (Cat. N1)
+                        </span>
+                    </div>
+
+                    <!-- 3 Cartes Stratégiques Issues du Carnet NotebookLM -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+                        
+                        <!-- Carte 1 : Contexte Économique fin 2026 -->
+                        <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col justify-between space-y-2">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-extrabold text-[10px] uppercase">Veille Loc-Eco • Oct. 2026</span>
+                                    <span>📈</span>
+                                </div>
+                                <h3 class="font-black text-white text-xs uppercase">1. Contexte Économique Fin 2026</h3>
+                                <p class="text-slate-300 leading-relaxed">
+                                    « Dans un contexte économique hautement incertain où investissements et coûts doivent être optimisés, <strong>l'usage remplace la propriété</strong>. Le véhicule est un outil de travail : la LLD protège la capacité d'endettement globale de la TPE. »
+                                </p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-800/80 text-[11px] text-amber-300 font-semibold">
+                                Réf. A. Brianne & E. Picard (2026)
+                            </div>
+                        </div>
+
+                        <!-- Carte 2 : Focus Fiscalité 2026 (Dynamique selon VUL ou VP) -->
+                        <div class="p-4 rounded-2xl bg-indigo-950/50 border-2 border-indigo-400/60 flex flex-col justify-between space-y-2 shadow-lg">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span id="card2-badge" class="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 font-black text-[10px] uppercase">Dynamique : VUL Cat. N1</span>
+                                    <span>⚖️</span>
+                                </div>
+                                <h3 class="font-black text-white text-xs uppercase">2. Focus Fiscalité 2026</h3>
+                                <p id="card2-body" class="text-indigo-100 leading-relaxed font-medium">
+                                    <strong>0 plafond d'amortissement</strong> + <strong>100 % de récupération de TVA</strong> sur les loyers, l'entretien et l'énergie + Bouclier total contre les futures restrictions de circulation (ZFE) et la dépréciation d'actifs.
+                                </p>
+                            </div>
+                            <div id="card2-footer" class="pt-2 border-t border-indigo-500/30 text-[11px] text-emerald-300 font-bold">
+                                Déduction 100 % en charges (Compte 6135)
+                            </div>
+                        </div>
+
+                        <!-- Carte 3 : Posture Commerciale B2B -->
+                        <div class="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col justify-between space-y-2">
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-extrabold text-[10px] uppercase">Méthode Océan Bleu</span>
+                                    <span>🎯</span>
+                                </div>
+                                <h3 class="font-black text-white text-xs uppercase">3. Posture Commerciale B2B</h3>
+                                <p class="text-slate-300 leading-relaxed">
+                                    Pas besoin d'être un expert mécanique :
+                                    <span class="block mt-1 text-emerald-300 font-bold">1. Détecter le besoin flotte</span>
+                                    <span class="block text-amber-300 font-bold">2. Chiffrer la préservation du BFR</span>
+                                    <span class="block text-sky-300 font-bold">3. Prescrire au plateau dédié</span>
+                                </p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-800/80 text-[11px] text-sky-300 font-semibold">
+                                Interlocuteur unique & process national
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- BLOC C : LE SCRIPT DE PITCH ÉLÈVE (VISIBLE EN MODE ÉCOLE) -->
+                <div id="student-pitch-block" class="no-print card-surface bg-gradient-to-r from-amber-950/40 via-slate-900 to-emerald-950/40 border-2 border-amber-500/50 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-lg bg-amber-500 text-slate-950 font-black text-[10px] uppercase">
+                                Bloc C • Mode École (Bac Pro MCV)
+                            </span>
+                            <h3 class="text-xs sm:text-sm font-black text-white uppercase">
+                                🎙️ Script de Pitch Binôme (45 secondes) — Décrocher sa PFMP
+                            </h3>
+                        </div>
+                        <span class="text-[11px] text-amber-300 font-semibold">Lycée Georges Brassens • Villepinte</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div class="p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/30 space-y-1">
+                            <div class="font-extrabold text-amber-300 uppercase">🗣️ Élève 1 (Accroche Commerciale B2B)</div>
+                            <p class="text-slate-200 italic leading-relaxed">
+                                « Bonjour Monsieur, nous sommes en Bac Pro MCV au Lycée Georges Brassens. Au lieu de venir les mains vides demander un stage, notre professeur — ancien banquier et courtier pro — nous a formés sur ce simulateur mobile. En 45 secondes sur votre parking ou en zone artisanale, nous montrons à un artisan comment s'équiper sans toucher à sa trésorerie. »
+                            </p>
+                        </div>
+                        <div class="p-3.5 rounded-xl bg-slate-950/90 border border-emerald-500/30 space-y-1">
+                            <div class="font-extrabold text-emerald-400 uppercase">📱 Élève 2 (Démonstration Chiffrée en Direct)</div>
+                            <p class="text-slate-200 italic leading-relaxed">
+                                « Regardez : pour cette flotte de <strong id="pitch-dynamic-qty" class="text-white">1 véhicule(s)</strong>, le client préserve <strong id="pitch-dynamic-cash" class="text-emerald-300">+8 960 €</strong> de BFR grâce au Zéro Apport et à la remise centrale, tout en incluant les révisions et même les balais d'essuie-glace et batteries pour <strong id="pitch-dynamic-loyer" class="text-emerald-300">418 € HT/mois</strong>. On vous qualifie les fiches leads directement pour votre plateau financement ! »
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOC D : MODULE DE QUALIFICATION & PRESCRIPTION PARTENAIRE -->
+                <div class="card-surface bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                                Bloc D • Processus de Prescription (Arval / LeasePlan / CGI Finance)
+                            </span>
+                            <h2 class="text-sm sm:text-base font-black text-white uppercase mt-1">
+                                Module de Qualification & Transmission Partenaire B2B
+                            </h2>
+                        </div>
+                        <span class="text-[11px] text-slate-400 font-medium">Critères Coface : Véhicules &lt; 3,5t</span>
+                    </div>
+
+                    <!-- Mandatory Qualification Fields -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                        <div>
+                            <label for="lead-company" class="text-slate-300 font-semibold block mb-1">Raison Sociale *</label>
+                            <input id="lead-company" type="text" placeholder="Ex: Bâtiment Services 93" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label for="lead-legal" class="text-slate-300 font-semibold block mb-1">Forme Juridique *</label>
+                            <select id="lead-legal" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:border-emerald-500 focus:outline-none cursor-pointer">
+                                <option value="SAS / SASU">SAS / SASU</option>
+                                <option value="SARL / EURL" selected>SARL / EURL</option>
+                                <option value="Artisan / Entreprise Individuelle (EI)">Artisan / EI</option>
+                                <option value="Micro-entreprise / Auto-entrepreneur">Micro-entreprise</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="lead-siren" class="text-slate-300 font-semibold block mb-1">N° SIREN (9 chiffres) *</label>
+                            <input id="lead-siren" type="text" maxlength="11" placeholder="Ex: 892 451 320" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label for="lead-seniority" class="text-slate-300 font-semibold block mb-1">Ancienneté activité (Bilans) *</label>
+                            <select id="lead-seniority" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold focus:border-emerald-500 focus:outline-none cursor-pointer">
+                                <option value="Plus de 2 ans (2 bilans produits - Éligibilité Standard)" selected>≥ 2 ans (2 bilans produits)</option>
+                                <option value="Entre 1 et 2 ans (1er bilan + étude caution/dépôt)">1 à 2 ans (1 bilan produit)</option>
+                                <option value="Création / Moins d'1 an (Étude spécifique CGI / Caution)">&lt; 1 an (Jeune entreprise)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="lead-name" class="text-slate-300 font-semibold block mb-1">Nom & Prénom du Dirigeant *</label>
+                            <input id="lead-name" type="text" placeholder="Ex: M. Karim Benali" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label for="lead-phone" class="text-slate-300 font-semibold block mb-1">Téléphone Direct *</label>
+                            <input id="lead-phone" type="tel" placeholder="Ex: 06 12 34 56 78" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none">
+                        </div>
+
+                        <div class="sm:col-span-2 lg:col-span-1">
+                            <label for="lead-email" class="text-slate-300 font-semibold block mb-1">Email Professionnel *</label>
+                            <input id="lead-email" type="email" placeholder="contact@societe.fr" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none">
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label for="lead-channel" class="text-emerald-400 font-extrabold block mb-1">Choix du Canal de Prescription Officiel *</label>
+                            <select id="lead-channel" class="w-full bg-slate-950 border-2 border-emerald-500/60 rounded-xl px-3 py-2 text-white font-extrabold focus:border-emerald-400 focus:outline-none cursor-pointer">
+                                <option value="ARVAL" selected>🟢 Plateau Arval Partenaires (arval.fr/demande-contact-partenaire-meilleur-taux)</option>
+                                <option value="LEASEPLAN">🟠 Plateau LeasePlan LLD (meilleurtaux@leaseplan.fr)</option>
+                                <option value="CGI">🔵 Spécialistes CGI Finance LOA Pro (meilleurtaux@cgifinance.fr / 01.86.52.60.48)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Live Prescription Summary Box -->
+                    <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-1">
+                        <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-1.5 mb-1.5 text-emerald-400 font-bold">
+                            <span>SYNTHÈSE DE LA FICHE DE PRESCRIPTION B2B</span>
+                            <span id="summary-channel-tag">CANAL : ARVAL PARTENAIRES</span>
+                        </div>
+                        <p id="summary-line-1">• Profil : VUL (Catégorie N1) | Quantité : 1 véh. | Prix unitaire : 28 000 € HT (Remise -12%)</p>
+                        <p id="summary-line-2">• Contrat : 48 mois / 25 000 km/an | Apport : 0 € (BFR 100% préservé)</p>
+                        <p id="summary-line-3">• Loyer Mensuel Fixe : 418 € HT/mois (Maintenance + Consommables + Pneus/Relais inclus)</p>
+                        <p id="summary-line-4" class="text-emerald-400 font-bold">• Cash immédiat sauvé : +8 960 € | Contact : https://www.arval.fr/demande-contact-partenaire-meilleur-taux</p>
+                    </div>
+
+                    <!-- Action CTA Button -->
+                    <div class="no-print flex flex-col sm:flex-row gap-3">
+                        <button type="button" id="btn-copy-prescription" class="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition cursor-pointer">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                            <span>Générer & Copier la Fiche de Prescription B2B</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- 4. PIED DE PAGE & SIGNATURE OFFICIELLE CONCEPTEUR (M. NGUON)      -->
+        <!-- ================================================================= -->
+        <footer class="mt-10 pt-6 border-t border-slate-800/90">
+            <div class="card-surface rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 p-5 sm:p-6 shadow-2xl">
+                <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                    
+                    <!-- Designer Identity & Pedigree -->
+                    <div class="flex items-start sm:items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-emerald-500 to-indigo-600 p-0.5 shadow-lg shrink-0">
+                            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-black text-base text-white tracking-tighter">
+                                MN
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                    Signature Officielle • Ingénierie B2B
+                                </span>
+                                <span id="sig-badge-pfmp" class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                    Outil d'ingénierie pédagogique & d'aide à la recherche de PFMP — Promotion 2026/2027
+                                </span>
+                            </div>
+                            <h3 id="sig-main-title" class="text-sm sm:text-base font-black text-white">
+                                Conçu par <span class="text-emerald-400">M. NGUON</span>
+                            </h3>
+                            <p id="sig-subtitle" class="text-xs text-slate-300 leading-relaxed">
+                                Conçu par M. NGUON — Enseignant Économie-Gestion &amp; Commerce-Vente (Lycée Georges Brassens, Villepinte) | Ex-Directeur d'Agence Bancaire &amp; Courtier Pro (18 ans d'expérience).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right Stamp -->
+                    <div class="flex flex-col sm:items-end text-xs text-slate-400 shrink-0 border-t lg:border-t-0 border-slate-800 pt-3 lg:pt-0 w-full lg:w-auto">
+                        <span class="font-bold text-slate-200">Conçu par M. NGUON • Ingénierie Financière</span>
+                        <span>Sources : Conventions Arval • LeasePlan • CGI Finance • Fiscalité 2026</span>
+                    </div>
+
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- VISUAL COPY CONFIRMATION TOAST (NO ALERT) -->
+    <div id="toast-notification" class="fixed bottom-6 right-6 z-50 hidden px-5 py-3.5 rounded-2xl bg-emerald-500 text-slate-950 font-black text-xs sm:text-sm shadow-2xl border-2 border-white flex items-center gap-2.5">
+        <span>✅</span>
+        <span id="toast-text">Fiche de prescription copiée avec succès !</span>
+    </div>
+
+    <!-- VANILLA JAVASCRIPT ENGINE -->
+    <script>
+        (function() {
+            const state = {
+                vehicleCategory: 'VUL', // 'VUL' (Cat N1) or 'VP' (VP 100% Électrique Éco-scoré)
+                qty: 1,
+                unitPrice: 28000,
+                duration: 48,
+                km: 25000,
+                apportPct: 0,
+                discountPct: 12,
+                srvMaint: true,  // +35€/m/véh
+                srvConso: true,  // +18€/m/véh
+                srvPneus: true,  // +28€/m/véh
+                whiteLabel: false,
+                mobilePreview: false
+            };
+
+            function formatNum(n) {
+                return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            }
+
+            function showToast(message) {
+                const toast = document.getElementById('toast-notification');
+                const txt = document.getElementById('toast-text');
+                if (!toast || !txt) return;
+                txt.textContent = message;
+                toast.classList.remove('hidden');
+                setTimeout(function() {
+                    toast.classList.add('hidden');
+                }, 3400);
+            }
+
+            function updateCategoryUI() {
+                const btnVul = document.getElementById('btn-cat-vul');
+                const btnVp = document.getElementById('btn-cat-vp');
+                const ruleAlert = document.getElementById('fiscal-rule-alert');
+                const activePill = document.getElementById('fiscal-active-pill');
+                const kpiBadgeCat = document.getElementById('kpi-badge-cat');
+                const card2Badge = document.getElementById('card2-badge');
+                const card2Body = document.getElementById('card2-body');
+                const card2Footer = document.getElementById('card2-footer');
+
+                if (state.vehicleCategory === 'VUL') {
+                    btnVul.className = 'p-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-left transition cursor-pointer';
+                    btnVp.className = 'p-3 rounded-xl border border-slate-700 bg-slate-800/60 text-left transition cursor-pointer';
+                    ruleAlert.innerHTML = '<strong class="text-emerald-300 uppercase block mb-0.5">✓ Règle Fiscale Active : Véhicule Utilitaire Léger (VUL - Catégorie N1)</strong>' +
+                        '<span>Absence de plafonnement d\'amortissement, déductibilité totale de la TVA (100 % sur loyers, entretien et énergie) et protection contre la dépréciation d\'actifs et restrictions ZFE.</span>';
+                    activePill.textContent = 'Mode actif : VUL (Cat. N1)';
+                    activePill.className = 'text-xs font-extrabold px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                    kpiBadgeCat.textContent = 'VUL N1';
+                    card2Badge.textContent = 'Dynamique : VUL Cat. N1';
+                    card2Badge.className = 'px-2 py-0.5 rounded bg-emerald-500 text-slate-950 font-black text-[10px] uppercase';
+                    card2Body.innerHTML = '<strong>0 plafond d\'amortissement</strong> + <strong>100 % de récupération de TVA</strong> sur loyers, entretien et énergie + Bouclier contre les futures restrictions de circulation (ZFE) et la dépréciation.';
+                    card2Footer.textContent = 'TVA 100 % déductible • Compte 6135 (Hors-Bilan)';
+                } else {
+                    btnVp.className = 'p-3 rounded-xl border-2 border-indigo-400 bg-indigo-500/20 text-left transition cursor-pointer';
+                    btnVul.className = 'p-3 rounded-xl border border-slate-700 bg-slate-800/60 text-left transition cursor-pointer';
+                    ruleAlert.innerHTML = '<strong class="text-indigo-300 uppercase block mb-0.5">✓ Règle Fiscale Active : Véhicule de Tourisme (VP 100% Électrique Éco-scoré)</strong>' +
+                        '<span>Plafond d\'amortissement optimal à 30 000 € TTC, exonération totale de malus et de TVE, et avantage en nature (AEN) réduit avec abattement de 70 %.</span>';
+                    activePill.textContent = 'Mode actif : VP Électrique Éco-scoré';
+                    activePill.className = 'text-xs font-extrabold px-2.5 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/40';
+                    kpiBadgeCat.textContent = 'VP ÉLEC';
+                    card2Badge.textContent = 'Dynamique : VP Électrique';
+                    card2Badge.className = 'px-2 py-0.5 rounded bg-indigo-400 text-slate-950 font-black text-[10px] uppercase';
+                    card2Body.innerHTML = '<strong>Plafond d\'amortissement maximal à 30 000 € TTC</strong> + <strong>Exonération totale de Malus &amp; TVE</strong> + <strong>Abattement de 70 %</strong> sur l\'Avantage en Nature (AEN) du dirigeant ou salarié.';
+                    card2Footer.textContent = '0 € TVE • 0 € Malus • Abattement AEN 70 %';
+                }
+            }
+
+            function calculateAll() {
+                const qty = state.qty;
+                const price = state.unitPrice;
+                const dur = state.duration;
+                const km = state.km;
+                const apportPct = state.apportPct;
+                const discPct = state.discountPct;
+
+                // 1. Totals & Central Discount
+                const totalCatalog = price * qty;
+                const unitDiscount = price * (discPct / 100);
+                const totalDiscount = unitDiscount * qty;
+                const unitNetPrice = price - unitDiscount;
+                const totalNetPrice = unitNetPrice * qty;
+
+                // 2. Apport Initial
+                const unitApportLLD = price * (apportPct / 100);
+                const totalApportLLD = unitApportLLD * qty;
+
+                // Classic purchase requires 20% down payment + fees
+                const totalClassicApport = totalCatalog * 0.20;
+
+                // 3. Residual Value Calculation
+                let vrRatio = 0.42;
+                if (dur === 24) vrRatio = 0.57;
+                else if (dur === 36) vrRatio = 0.49;
+                else if (dur === 48) vrRatio = 0.41;
+                else if (dur === 60) vrRatio = 0.33;
+
+                // Mileage adjustment (15k to 60k)
+                const kmDiff = (km - 25000) / 10000;
+                vrRatio = Math.max(0.20, Math.min(0.64, vrRatio - (kmDiff * 0.035)));
+
+                // Electric VP enjoys favorable green financing rate (4.70% vs 5.40%)
+                const annualRate = state.vehicleCategory === 'VP' ? 0.047 : 0.053;
+                const monthlyRate = annualRate / 12;
+
+                const unitResidual = unitNetPrice * vrRatio;
+                const financedBase = Math.max(0, unitNetPrice - unitApportLLD);
+                const depreciationPart = (financedBase - unitResidual) / dur;
+                const financeCostPart = ((financedBase + unitResidual) / 2) * monthlyRate;
+
+                // 4. Exact Service & Consumables Packs (+35€, +18€, +28€)
+                let unitServices = 0;
+                if (state.srvMaint) unitServices += 35;
+                if (state.srvConso) unitServices += 18;
+                if (state.srvPneus) unitServices += 28;
+
+                const unitLLDMonthly = Math.round(depreciationPart + financeCostPart + unitServices);
+                const totalLLDMonthly = unitLLDMonthly * qty;
+
+                // 5. Classic Credit Comparison (5.9% rate, only 3% solo discount, unmutualized maintenance)
+                const unitClassicNet = price * 0.97;
+                const unitClassicLoan = unitClassicNet - (price * 0.20);
+                const classicMonthlyRate = 0.059 / 12;
+                const unitClassicCreditMens = (unitClassicLoan * classicMonthlyRate) / (1 - Math.pow(1 + classicMonthlyRate, -dur));
+                const unitClassicMaint = 98 + Math.round((km - 15000) / 5000) * 9;
+                const unitClassicMonthly = Math.round(unitClassicCreditMens + unitClassicMaint);
+                const totalClassicMonthly = unitClassicMonthly * qty;
+
+                // 6. Cash Preserved & Monthly Gain
+                const cashSavedImmediate = Math.max(0, (totalClassicApport - totalApportLLD) + totalDiscount);
+                const monthlyFluxGain = Math.max(15, totalClassicMonthly - totalLLDMonthly);
+                const contractFluxGain = monthlyFluxGain * dur;
+
+                // 7. Partner Commission CGI Finance (3% of vehicle value)
+                const partnerComm = Math.round(totalCatalog * 0.03);
+
+                // --- DOM UPDATES ---
+                document.getElementById('lbl-qty').textContent = qty;
+                document.getElementById('lbl-km').textContent = formatNum(km);
+                document.getElementById('lbl-apport-pct').textContent = apportPct;
+                document.getElementById('lbl-apport-euro').textContent = formatNum(totalApportLLD) + ' €';
+                document.getElementById('lbl-discount').textContent = discPct;
+                document.getElementById('lbl-discount-euro').textContent = '-' + formatNum(totalDiscount) + ' €';
+
+                // Top KPIs
+                document.getElementById('kpi-loyer-flotte').textContent = formatNum(totalLLDMonthly) + ' €';
+                document.getElementById('kpi-loyer-unitaire').textContent = formatNum(unitLLDMonthly) + ' € / véh. • Services inclus (' + unitServices + ' €)';
+                document.getElementById('kpi-cash-saved').textContent = '+' + formatNum(cashSavedImmediate) + ' €';
+                document.getElementById('kpi-cash-detail').textContent = 'Apport évité (' + formatNum(totalClassicApport - totalApportLLD) + ' €) + Remise (-' + formatNum(totalDiscount) + ' €)';
+                document.getElementById('kpi-monthly-gain').textContent = '+' + formatNum(monthlyFluxGain) + ' €';
+                document.getElementById('kpi-contract-gain').textContent = 'Soit +' + formatNum(contractFluxGain) + ' € préservés sur ' + dur + ' mois';
+                document.getElementById('kpi-partner-comm').textContent = formatNum(partnerComm) + ' €';
+                document.getElementById('kpi-4-sub').textContent = '3 % sur valeur flotte (' + formatNum(totalCatalog) + ' €)';
+
+                // Bloc A: Visual Shock
+                document.getElementById('comp-catalog-total').textContent = formatNum(totalCatalog) + ' € HT (' + qty + ' véh.)';
+                document.getElementById('shock-classic-monthly').textContent = formatNum(totalClassicMonthly) + ' €';
+                document.getElementById('shock-classic-apport').textContent = formatNum(totalClassicApport) + ' €';
+                document.getElementById('shock-classic-drain').textContent = '-' + formatNum(totalClassicApport) + ' € de cash';
+
+                document.getElementById('shock-lld-monthly').textContent = formatNum(totalLLDMonthly) + ' €';
+                document.getElementById('shock-lld-unit-tag').textContent = '(' + formatNum(unitLLDMonthly) + ' € / véh.)';
+                document.getElementById('shock-lld-apport').textContent = formatNum(totalApportLLD) + ' €';
+                document.getElementById('shock-lld-discount').textContent = '-' + formatNum(totalDiscount) + ' € HT';
+                document.getElementById('shock-lld-net').textContent = formatNum(totalNetPrice) + ' €';
+                document.getElementById('shock-lld-saved').textContent = '+' + formatNum(cashSavedImmediate) + ' € de trésorerie';
+                document.getElementById('banner-comm-val').textContent = formatNum(partnerComm) + ' € HT';
+
+                // Bloc C: Dynamic Student Pitch Numbers
+                document.getElementById('pitch-dynamic-qty').textContent = qty + ' véhicule(s)';
+                document.getElementById('pitch-dynamic-cash').textContent = '+' + formatNum(cashSavedImmediate) + ' €';
+                document.getElementById('pitch-dynamic-loyer').textContent = formatNum(totalLLDMonthly) + ' € HT/mois';
+
+                // Bloc D: Live Prescription Summary
+                const channel = document.getElementById('lead-channel').value;
+                let channelContact = 'https://www.arval.fr/demande-contact-partenaire-meilleur-taux';
+                let channelTitle = 'CANAL : PLATEAU ARVAL PARTENAIRES';
+                if (channel === 'LEASEPLAN') {
+                    channelContact = 'meilleurtaux@leaseplan.fr';
+                    channelTitle = 'CANAL : PLATEAU LEASEPLAN LLD';
+                } else if (channel === 'CGI') {
+                    channelContact = 'meilleurtaux@cgifinance.fr | Tél : 01.86.52.60.48';
+                    channelTitle = 'CANAL : SPÉCIALISTES CGI FINANCE LOA (Com. 3% : ' + formatNum(partnerComm) + ' €)';
+                }
+
+                const catLabel = state.vehicleCategory === 'VUL' ? 'VUL (Catégorie N1 - 100% TVA)' : 'VP 100% Électrique Éco-scoré (Plafond 30k€)';
+                document.getElementById('summary-channel-tag').textContent = channelTitle;
+                document.getElementById('summary-line-1').textContent = '• Profil : ' + catLabel + ' | Qté : ' + qty + ' véh. | Catalogue : ' + formatNum(totalCatalog) + ' € (Remise -' + discPct + '%)';
+                document.getElementById('summary-line-2').textContent = '• Contrat : ' + dur + ' mois / ' + formatNum(km) + ' km/an | Apport initial : ' + formatNum(totalApportLLD) + ' € (BFR préservé)';
+                document.getElementById('summary-line-3').textContent = '• Loyer Mensuel Fixe : ' + formatNum(totalLLDMonthly) + ' € HT/mois (soit ' + formatNum(unitLLDMonthly) + ' €/véh. • Services inclus : +' + unitServices + ' €)';
+                document.getElementById('summary-line-4').textContent = '• Cash préservé : +' + formatNum(cashSavedImmediate) + ' € | Routage : ' + channelContact;
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const sliderQty = document.getElementById('slider-qty');
+                const sliderPrice = document.getElementById('slider-price');
+                const numPrice = document.getElementById('num-price');
+                const sliderKm = document.getElementById('slider-km');
+                const sliderApport = document.getElementById('slider-apport');
+                const sliderDiscount = document.getElementById('slider-discount');
+
+                // Category Buttons (VUL vs VP)
+                document.getElementById('btn-cat-vul').addEventListener('click', function() {
+                    state.vehicleCategory = 'VUL';
+                    updateCategoryUI();
+                    calculateAll();
+                });
+
+                document.getElementById('btn-cat-vp').addEventListener('click', function() {
+                    state.vehicleCategory = 'VP';
+                    updateCategoryUI();
+                    calculateAll();
+                });
+
+                // Sliders & Inputs
+                sliderQty.addEventListener('input', function() {
+                    state.qty = parseInt(this.value, 10) || 1;
+                    calculateAll();
+                });
+
+                sliderPrice.addEventListener('input', function() {
+                    state.unitPrice = parseInt(this.value, 10) || 28000;
+                    numPrice.value = state.unitPrice;
+                    calculateAll();
+                });
+
+                numPrice.addEventListener('input', function() {
+                    let v = parseInt(this.value, 10);
+                    if (isNaN(v) || v < 8000) v = 12000;
+                    state.unitPrice = v;
+                    sliderPrice.value = Math.min(80000, Math.max(15000, v));
+                    calculateAll();
+                });
+
+                sliderKm.addEventListener('input', function() {
+                    state.km = parseInt(this.value, 10) || 25000;
+                    calculateAll();
+                });
+
+                sliderApport.addEventListener('input', function() {
+                    state.apportPct = parseInt(this.value, 10) || 0;
+                    calculateAll();
+                });
+
+                sliderDiscount.addEventListener('input', function() {
+                    state.discountPct = parseInt(this.value, 10) || 0;
+                    calculateAll();
+                });
+
+                // Force Zero Apport Button
+                document.getElementById('btn-zero-apport').addEventListener('click', function() {
+                    state.apportPct = 0;
+                    sliderApport.value = 0;
+                    calculateAll();
+                    showToast('Zéro Apport (0 €) forcé : Trésorerie (BFR) 100 % préservée !');
+                });
+
+                // Duration Buttons
+                const durButtons = document.querySelectorAll('.dur-btn');
+                function updateDurButtons() {
+                    durButtons.forEach(function(btn) {
+                        const d = parseInt(btn.getAttribute('data-dur'), 10);
+                        if (d === state.duration) {
+                            btn.className = 'dur-btn py-2 rounded-lg text-xs font-extrabold border-2 border-emerald-500 bg-emerald-500/20 text-white cursor-pointer';
+                        } else {
+                            btn.className = 'dur-btn py-2 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 cursor-pointer';
+                        }
+                    });
+                }
+                durButtons.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        state.duration = parseInt(this.getAttribute('data-dur'), 10);
+                        updateDurButtons();
+                        calculateAll();
+                    });
+                });
+
+                // Checkboxes for Services
+                document.getElementById('chk-maint').addEventListener('change', function() {
+                    state.srvMaint = this.checked;
+                    calculateAll();
+                });
+                document.getElementById('chk-conso').addEventListener('change', function() {
+                    state.srvConso = this.checked;
+                    calculateAll();
+                });
+                document.getElementById('chk-pneus').addEventListener('change', function() {
+                    state.srvPneus = this.checked;
+                    calculateAll();
+                });
+
+                // Channel change
+                document.getElementById('lead-channel').addEventListener('change', calculateAll);
+
+                // 4 Quick Presets
+                const presetBtns = document.querySelectorAll('.preset-btn');
+                presetBtns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        presetBtns.forEach(function(b) {
+                            b.className = 'preset-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer';
+                        });
+                        this.className = 'preset-btn px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border-2 border-emerald-500 text-left transition cursor-pointer';
+
+                        const p = this.getAttribute('data-preset');
+                        state.apportPct = 0;
+                        sliderApport.value = 0;
+
+                        if (p === 'artisan') {
+                            state.vehicleCategory = 'VUL';
+                            state.qty = 1;
+                            state.unitPrice = 28000;
+                            state.duration = 48;
+                            state.km = 25000;
+                            state.discountPct = 12;
+                            showToast('Scénario chargé : Utilitaire Artisan (VUL N1 - 28 000 €)');
+                        } else if (p === 'citadine') {
+                            state.vehicleCategory = 'VP';
+                            state.qty = 1;
+                            state.unitPrice = 19500;
+                            state.duration = 36;
+                            state.km = 20000;
+                            state.discountPct = 10;
+                            showToast('Scénario chargé : Citadine Commerciale (VP Électrique - 19 500 €)');
+                        } else if (p === 'suv') {
+                            state.vehicleCategory = 'VP';
+                            state.qty = 1;
+                            state.unitPrice = 42000;
+                            state.duration = 36;
+                            state.km = 25000;
+                            state.discountPct = 12;
+                            showToast('Scénario chargé : SUV Dirigeant (VP Électrique Éco-scoré - 42 000 €)');
+                        } else if (p === 'flotte') {
+                            state.vehicleCategory = 'VUL';
+                            state.qty = 3;
+                            state.unitPrice = 28000;
+                            state.duration = 48;
+                            state.km = 30000;
+                            state.discountPct = 15;
+                            showToast('Scénario chargé : Flotte TPE 3 Utilitaires (84 000 €)');
+                        }
+
+                        sliderQty.value = state.qty;
+                        sliderPrice.value = state.unitPrice;
+                        numPrice.value = state.unitPrice;
+                        sliderKm.value = state.km;
+                        sliderDiscount.value = state.discountPct;
+
+                        updateCategoryUI();
+                        updateDurButtons();
+                        calculateAll();
+                    });
+                });
+
+                // View Mode Toggle: PC Grand Écran vs Aperçu Smartphone Élève
+                const btnViewMode = document.getElementById('btn-view-mode');
+                const viewModeLabel = document.getElementById('view-mode-label');
+                const appWrapper = document.getElementById('app-wrapper');
+                const mainGrid = document.getElementById('main-grid');
+                const colConfig = document.getElementById('col-config');
+                const colResults = document.getElementById('col-results');
+
+                btnViewMode.addEventListener('click', function() {
+                    state.mobilePreview = !state.mobilePreview;
+                    if (state.mobilePreview) {
+                        appWrapper.classList.add('mobile-preview-frame');
+                        mainGrid.classList.remove('lg:grid-cols-12');
+                        colConfig.classList.remove('lg:col-span-5');
+                        colResults.classList.remove('lg:col-span-7');
+                        viewModeLabel.textContent = 'Vue : Aperçu Smartphone Élève';
+                        showToast('Mode Aperçu Smartphone activé (Simulation terrain élève)');
+                    } else {
+                        appWrapper.classList.remove('mobile-preview-frame');
+                        mainGrid.classList.add('lg:grid-cols-12');
+                        colConfig.classList.add('lg:col-span-5');
+                        colResults.classList.add('lg:col-span-7');
+                        viewModeLabel.textContent = 'Vue : PC Grand Écran';
+                        showToast('Vue PC Grand Écran (Dashboard 12 colonnes) activée');
+                    }
+                });
+
+                // Mode Toggle: École (Pitch Élève) vs Client Pro (Marque Blanche)
+                const btnWhiteLabel = document.getElementById('btn-whitelabel');
+                const wlDot = document.getElementById('wl-dot');
+                const wlText = document.getElementById('wl-text');
+                const pitchBlock = document.getElementById('student-pitch-block');
+                const partnerBanner = document.getElementById('partner-comm-banner');
+                const sigBadgePfmp = document.getElementById('sig-badge-pfmp');
+                const sigSubtitle = document.getElementById('sig-subtitle');
+
+                btnWhiteLabel.addEventListener('click', function() {
+                    state.whiteLabel = !state.whiteLabel;
+                    if (state.whiteLabel) {
+                        pitchBlock.classList.add('hidden');
+                        partnerBanner.classList.add('hidden');
+                        wlDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+                        wlText.textContent = 'Mode : Client Pro (Marque Blanche)';
+                        sigBadgePfmp.textContent = 'Outil d\'Aide à la Décision & Qualification Flotte B2B — Conçu par M. NGUON';
+                        sigSubtitle.textContent = 'Conçu par M. NGUON — Ingénierie Financière & Solutions de Gestion de Parc B2B (18 ans d\'expertise Bancaire & Courtage Pro).';
+                        showToast('Mode Client Pro (Marque Blanche) activé');
+                    } else {
+                        pitchBlock.classList.remove('hidden');
+                        partnerBanner.classList.remove('hidden');
+                        wlDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+                        wlText.textContent = 'Mode : École (Pitch Élève)';
+                        sigBadgePfmp.textContent = 'Outil d\'ingénierie pédagogique & d\'aide à la recherche de PFMP — Promotion 2026/2027';
+                        sigSubtitle.textContent = 'Conçu par M. NGUON — Enseignant Économie-Gestion & Commerce-Vente (Lycée Georges Brassens, Villepinte) | Ex-Directeur d\'Agence Bancaire & Courtier Pro (18 ans d\'expérience).';
+                        showToast('Mode École (Pitch Élève Bac Pro MCV) activé');
+                    }
+                });
+
+                // Copy Prescription Lead Sheet
+                document.getElementById('btn-copy-prescription').addEventListener('click', function() {
+                    const company = document.getElementById('lead-company').value || 'À renseigner';
+                    const legal = document.getElementById('lead-legal').value;
+                    const siren = document.getElementById('lead-siren').value || 'En cours';
+                    const seniority = document.getElementById('lead-seniority').value;
+                    const name = document.getElementById('lead-name').value || 'Dirigeant';
+                    const phone = document.getElementById('lead-phone').value || 'Non renseigné';
+                    const email = document.getElementById('lead-email').value || 'Non renseigné';
+
+                    const s1 = document.getElementById('summary-line-1').textContent;
+                    const s2 = document.getElementById('summary-line-2').textContent;
+                    const s3 = document.getElementById('summary-line-3').textContent;
+                    const s4 = document.getElementById('summary-line-4').textContent;
+                    const chTag = document.getElementById('summary-channel-tag').textContent;
+
+                    const textReport = [
+                        '====================================================================',
+                        'FICHE DE PRESCRIPTION FLOTTE B2B — QUALIF\'FLOTTE PRO 2026',
+                        chTag,
+                        '====================================================================',
+                        '1. IDENTIFICATION DE L\'ENTREPRISE :',
+                        '   • Raison sociale : ' + company + ' (' + legal + ')',
+                        '   • N° SIREN       : ' + siren,
+                        '   • Ancienneté     : ' + seniority,
+                        '   • Contact        : ' + name + ' | Tél : ' + phone + ' | Email : ' + email,
+                        '',
+                        '2. CALIBRAGE FINANCIER & SERVICES INCLUS :',
+                        '   ' + s1,
+                        '   ' + s2,
+                        '   ' + s3,
+                        '   ' + s4,
+                        '',
+                        '--------------------------------------------------------------------',
+                        'Conçu par M. NGUON — Ingénierie Financière & Solutions de Gestion de Parc B2B',
+                        '===================================================================='
+                    ].join('\n');
+
+                    const ta = document.createElement('textarea');
+                    ta.value = textReport;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    try {
+                        document.execCommand('copy');
+                        showToast('Fiche de Prescription B2B copiée dans le presse-papier !');
+                    } catch (err) {
+                        showToast('Fiche prête');
+                    }
+                    document.body.removeChild(ta);
+                });
+
+                // Print Button
+                document.getElementById('btn-print-top').addEventListener('click', function() {
+                    window.print();
+                });
+
+                // Initial Run
+                updateCategoryUI();
+                calculateAll();
+            });
+        })();
+    </script>
+</body>
+</html>
